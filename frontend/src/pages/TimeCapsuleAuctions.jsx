@@ -19,16 +19,23 @@ const TimeCapsuleAuctions = () => {
   const [historicalPeriods, setHistoricalPeriods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('all');
+  const [stats, setStats] = useState({
+    totalExperts: 0,
+    activeAuctions: 0,
+    totalItems: 0,
+    averageCulturalImpact: '0.0'
+  });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         
-        // Fetch periods and time capsule items in parallel
-        const [periodsRes, itemsRes] = await Promise.all([
+        // Fetch periods, items, and stats in parallel
+        const [periodsRes, itemsRes, statsRes] = await Promise.all([
           timeCapsuleAPI.getPeriods(),
-          timeCapsuleAPI.getAll({ period: selectedPeriod, status: 'active' })
+          timeCapsuleAPI.getAll({ period: selectedPeriod, status: 'active' }),
+          timeCapsuleAPI.getStats()
         ]);
 
         if (periodsRes.data.success) {
@@ -37,6 +44,10 @@ const TimeCapsuleAuctions = () => {
 
         if (itemsRes.data.success) {
           setTimeCapsuleItems(itemsRes.data.data || []);
+        }
+
+        if (statsRes.data.success) {
+          setStats(statsRes.data.data);
         }
       } catch (error) {
         console.error('Error fetching time capsule data:', error);
@@ -51,6 +62,12 @@ const TimeCapsuleAuctions = () => {
           { id: 'industrial', name: 'Industrial Age', count: 0 }
         ]);
         setTimeCapsuleItems([]);
+        setStats({
+          totalExperts: 0,
+          activeAuctions: 0,
+          totalItems: 0,
+          averageCulturalImpact: '0.0'
+        });
       } finally {
         setLoading(false);
       }
@@ -106,19 +123,22 @@ const TimeCapsuleAuctions = () => {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
               <div className="bg-white/10 rounded-lg p-6 backdrop-blur">
-                <DocumentTextIcon className="w-8 h-8 text-purple-300 mx-auto mb-3" />
-                <h3 className="text-lg font-semibold mb-2">Expert Verified</h3>
-                <p className="text-purple-200">Every item authenticated by leading historians and experts</p>
+                <AcademicCapIcon className="w-8 h-8 text-purple-300 mx-auto mb-3" />
+                <div className="text-2xl font-bold text-white mb-1">{stats.totalExperts}</div>
+                <h3 className="text-lg font-semibold mb-2">Expert Historians</h3>
+                <p className="text-purple-200">Verified experts authenticating each item</p>
               </div>
               <div className="bg-white/10 rounded-lg p-6 backdrop-blur">
                 <StarIcon className="w-8 h-8 text-purple-300 mx-auto mb-3" />
+                <div className="text-2xl font-bold text-white mb-1">{stats.averageCulturalImpact}/10</div>
                 <h3 className="text-lg font-semibold mb-2">Cultural Impact</h3>
-                <p className="text-purple-200">Rated for historical significance and cultural importance</p>
+                <p className="text-purple-200">Average significance rating across all items</p>
               </div>
               <div className="bg-white/10 rounded-lg p-6 backdrop-blur">
-                <AcademicCapIcon className="w-8 h-8 text-purple-300 mx-auto mb-3" />
-                <h3 className="text-lg font-semibold mb-2">Educational Value</h3>
-                <p className="text-purple-200">Complete historical context and discovery stories included</p>
+                <ClockIcon className="w-8 h-8 text-purple-300 mx-auto mb-3" />
+                <div className="text-2xl font-bold text-white mb-1">{stats.totalItems}</div>
+                <h3 className="text-lg font-semibold mb-2">Historical Items</h3>
+                <p className="text-purple-200">Total artifacts preserved in our collection</p>
               </div>
             </div>
           </motion.div>
@@ -152,8 +172,15 @@ const TimeCapsuleAuctions = () => {
         </motion.div>
 
         {/* Items Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {filteredItems.map((item, index) => (
+        {filteredItems.length === 0 ? (
+          <div className="text-center py-12">
+            <ClockIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Time Capsule Auctions Found</h3>
+            <p className="text-gray-500">There are currently no active time capsule auctions in this period.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {filteredItems.map((item, index) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
@@ -237,21 +264,10 @@ const TimeCapsuleAuctions = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Link
-                        to={`/auctions/${item.id}`}
-                        className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
-                      >
-                        <span>View Details</span>
-                        <ArrowRightIcon className="w-4 h-4" />
-                      </Link>
-                      
-                      <Link
-                        to={`/provenance/${item.id}`}
-                        className="w-full bg-gray-900 hover:bg-gray-800 text-white py-2 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
-                      >
-                        <DocumentTextIcon className="w-4 h-4" />
-                        <span>View Provenance</span>
-                      </Link>
+                      <div className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center space-x-2">
+                        <ClockIcon className="w-4 h-4" />
+                        <span>Time Capsule Item</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -267,8 +283,9 @@ const TimeCapsuleAuctions = () => {
                 <p className="text-xs text-gray-500 mt-1">"{item.historicalImportance}"</p>
               </div>
             </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Educational Section */}
         <motion.section

@@ -7,6 +7,70 @@ const router = express.Router();
 // @route   GET /api/mystery-bids
 // @desc    Get all mystery bid auctions
 // @access  Public
+// @route   GET /api/mystery-bids/stats
+// @desc    Get mystery bids statistics
+// @access  Public
+router.get('/stats', async (req, res) => {
+  try {
+    const activeMysteries = await MysteryBid.countDocuments({ status: 'active' });
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const revealedToday = await MysteryBid.countDocuments({
+      status: 'completed',
+      updatedAt: { $gte: today, $lt: tomorrow }
+    });
+
+    // Calculate total value from active auctions
+    const activeAuctions = await MysteryBid.find({ status: 'active' }, 'totalValue');
+    let totalValueSum = 0;
+    activeAuctions.forEach(auction => {
+      if (auction.totalValue) {
+        const value = auction.totalValue.replace(/[^\d]/g, '');
+        const numValue = parseInt(value);
+        if (!isNaN(numValue)) {
+          totalValueSum += numValue;
+        }
+      }
+    });
+
+    const formatValue = (value) => {
+      if (value >= 1000000) {
+        return `$${(value / 1000000).toFixed(1)}M`;
+      } else if (value >= 1000) {
+        return `$${(value / 1000).toFixed(0)}K`;
+      } else {
+        return `$${value}`;
+      }
+    };
+
+    // Get unique active bidders count
+    const activeBidders = await MysteryBid.aggregate([
+      { $match: { status: 'active' } },
+      { $group: { _id: null, totalBidders: { $sum: '$participantCount' } } }
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        activeMysteries,
+        revealedToday,
+        totalValue: formatValue(totalValueSum),
+        activeBidders: activeBidders[0]?.totalBidders || 0
+      }
+    });
+  } catch (error) {
+    console.error('Get mystery bids stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get mystery bids statistics'
+    });
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const { category, mysteryLevel, status, page = 1, limit = 10, featured } = req.query;

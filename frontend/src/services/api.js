@@ -136,6 +136,7 @@ export const timeCapsuleAPI = {
   getAll: (params) => api.get('/time-capsule', { params }),
   getById: (id) => api.get(`/time-capsule/${id}`),
   getPeriods: () => api.get('/time-capsule/periods'),
+  getStats: () => api.get('/time-capsule/stats'),
   create: (data) => api.post('/time-capsule', data),
   update: (id, data) => api.put(`/time-capsule/${id}`, data),
   delete: (id) => api.delete(`/time-capsule/${id}`),
@@ -146,10 +147,26 @@ export const mysteryBidsAPI = {
   getAll: (params) => api.get('/mystery-bids', { params }),
   getById: (id) => api.get(`/mystery-bids/${id}`),
   getCategories: () => api.get('/mystery-bids/categories'),
+  getStats: () => api.get('/mystery-bids/stats'),
   create: (data) => api.post('/mystery-bids', data),
   update: (id, data) => api.put(`/mystery-bids/${id}`, data),
   delete: (id) => api.delete(`/mystery-bids/${id}`),
   placeBid: (id, bidData) => api.post(`/mystery-bids/${id}/bid`, bidData),
+};
+
+// Restoration API
+export const restorationAPI = {
+  getStats: () => api.get('/restoration/stats'),
+  getExperts: (params) => api.get('/restoration/experts', { params }),
+  getProjects: (params) => api.get('/restoration/projects', { params }),
+  getExpertById: (id) => api.get(`/restoration/experts/${id}`),
+  getProjectById: (id) => api.get(`/restoration/projects/${id}`),
+  createExpert: (data) => api.post('/restoration/experts', data),
+  createProject: (data) => api.post('/restoration/projects', data),
+  updateExpert: (id, data) => api.put(`/restoration/experts/${id}`, data),
+  updateProject: (id, data) => api.put(`/restoration/projects/${id}`, data),
+  deleteExpert: (id) => api.delete(`/restoration/experts/${id}`),
+  deleteProject: (id) => api.delete(`/restoration/projects/${id}`),
 };
 
 export default api;

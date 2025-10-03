@@ -22,26 +22,50 @@ const MysteryBids = () => {
   const [mysteryAuctions, setMysteryAuctions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [showBidModal, setShowBidModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
+
+  const [stats, setStats] = useState({
+    activeMysteries: 0,
+    revealedToday: 0,
+    totalValue: '$0',
+    activeBidders: 0
+  });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         
-        const response = await mysteryBidsAPI.getAll({ 
-          category: selectedCategory, 
-          status: 'active' 
-        });
+        const [auctionsResponse, statsResponse] = await Promise.all([
+          mysteryBidsAPI.getAll({ 
+            category: selectedCategory, 
+            status: 'active' 
+          }),
+          mysteryBidsAPI.getStats()
+        ]);
 
-        if (response.data.success) {
-          setMysteryAuctions(response.data.data || []);
+        if (auctionsResponse.data.success) {
+          setMysteryAuctions(auctionsResponse.data.data || []);
+        }
+
+        if (statsResponse.data.success) {
+          const statsData = statsResponse.data.data;
+          setStats({
+            activeMysteries: statsData.activeMysteries || 0,
+            revealedToday: statsData.revealedToday || 0,
+            totalValue: statsData.totalValue || '$0',
+            activeBidders: statsData.activeBidders || 0
+          });
         }
       } catch (error) {
         console.error('Error fetching mystery bids:', error);
         toast.error('Failed to load mystery bid auctions');
         setMysteryAuctions([]);
+        setStats({
+          activeMysteries: 0,
+          revealedToday: 0,
+          totalValue: '$0',
+          activeBidders: 0
+        });
       } finally {
         setLoading(false);
       }
@@ -93,10 +117,7 @@ const MysteryBids = () => {
     return `${hours}h`;
   };
 
-  const handleBidClick = (item) => {
-    setSelectedItem(item);
-    setShowBidModal(true);
-  };
+
 
   if (loading) {
     return (
@@ -130,22 +151,22 @@ const MysteryBids = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
               <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
                 <QuestionMarkCircleIcon className="w-6 h-6 text-purple-300 mx-auto mb-2" />
-                <div className="text-2xl font-bold">47</div>
+                <div className="text-2xl font-bold">{stats.activeMysteries}</div>
                 <div className="text-sm text-purple-200">Active Mysteries</div>
               </div>
               <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
                 <LockClosedIcon className="w-6 h-6 text-purple-300 mx-auto mb-2" />
-                <div className="text-2xl font-bold">12</div>
+                <div className="text-2xl font-bold">{stats.revealedToday}</div>
                 <div className="text-sm text-purple-200">Revealed Today</div>
               </div>
               <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
                 <TrophyIcon className="w-6 h-6 text-purple-300 mx-auto mb-2" />
-                <div className="text-2xl font-bold">$2.3M</div>
+                <div className="text-2xl font-bold">{stats.totalValue}</div>
                 <div className="text-sm text-purple-200">Won This Week</div>
               </div>
               <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
                 <UserGroupIcon className="w-6 h-6 text-purple-300 mx-auto mb-2" />
-                <div className="text-2xl font-bold">234</div>
+                <div className="text-2xl font-bold">{stats.activeBidders}</div>
                 <div className="text-sm text-purple-200">Active Bidders</div>
               </div>
             </div>
@@ -184,8 +205,15 @@ const MysteryBids = () => {
         </motion.div>
 
         {/* Mystery Auctions Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {filteredAuctions.map((auction, index) => (
+        {filteredAuctions.length === 0 ? (
+          <div className="text-center py-12">
+            <QuestionMarkCircleIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Mystery Auctions Found</h3>
+            <p className="text-gray-500">There are currently no active mystery bid auctions in this category.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {filteredAuctions.map((auction, index) => (
             <motion.div
               key={auction.id}
               initial={{ opacity: 0, y: 20 }}
@@ -306,18 +334,16 @@ const MysteryBids = () => {
                     </div>
                   </div>
                   
-                  <button
-                    onClick={() => handleBidClick(auction)}
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2"
-                  >
-                    <CurrencyDollarIcon className="w-4 h-4" />
-                    <span>Place Bid</span>
-                  </button>
+                  <div className="bg-purple-600 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2">
+                    <QuestionMarkCircleIcon className="w-4 h-4" />
+                    <span>Mystery Auction</span>
+                  </div>
                 </div>
               </div>
             </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* How It Works */}
         <motion.section
@@ -355,53 +381,7 @@ const MysteryBids = () => {
         </motion.section>
       </div>
 
-      {/* Bid Modal */}
-      {showBidModal && selectedItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl max-w-md w-full p-6"
-          >
-            <h3 className="text-xl font-bold mb-4">Place Mystery Bid</h3>
-            <div className="mb-4">
-              <p className="text-gray-600 mb-2">{selectedItem.title}</p>
-              <p className="text-sm text-purple-600">Minimum Bid: ${selectedItem.minimumBid.toLocaleString()}</p>
-            </div>
-            
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Your Bid Amount
-              </label>
-              <input
-                type="number"
-                min={selectedItem.minimumBid}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
-                placeholder={`$${selectedItem.minimumBid.toLocaleString()}`}
-              />
-            </div>
 
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6">
-              <p className="text-xs text-yellow-800">
-                <strong>Mystery Bid Rules:</strong> Your bid is anonymous and helps reveal the collection. 
-                You can only see other bids once the reveal threshold is reached.
-              </p>
-            </div>
-
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowBidModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
-                Place Bid
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
     </div>
   );
 };

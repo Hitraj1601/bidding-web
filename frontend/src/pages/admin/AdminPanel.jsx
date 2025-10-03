@@ -10,9 +10,10 @@ import {
   QuestionMarkCircleIcon,
   UserGroupIcon,
   CalendarDaysIcon,
-  XMarkIcon
+  XMarkIcon,
+  WrenchScrewdriverIcon
 } from '@heroicons/react/24/outline';
-import { timeCapsuleAPI, mysteryBidsAPI, collectorsAPI } from '../../services/api';
+import { timeCapsuleAPI, mysteryBidsAPI, collectorsAPI, restorationAPI } from '../../services/api';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('time-capsule');
@@ -20,6 +21,8 @@ const AdminPanel = () => {
   const [mysteryBids, setMysteryBids] = useState([]);
   const [groups, setGroups] = useState([]);
   const [events, setEvents] = useState([]);
+  const [restorationExperts, setRestorationExperts] = useState([]);
+  const [restorationProjects, setRestorationProjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('create');
@@ -30,7 +33,8 @@ const AdminPanel = () => {
     { id: 'time-capsule', name: 'Time Capsule', icon: ClockIcon },
     { id: 'mystery-bids', name: 'Mystery Bids', icon: QuestionMarkCircleIcon },
     { id: 'groups', name: 'Groups', icon: UserGroupIcon },
-    { id: 'events', name: 'Events', icon: CalendarDaysIcon }
+    { id: 'events', name: 'Events', icon: CalendarDaysIcon },
+    { id: 'restoration', name: 'Restoration', icon: WrenchScrewdriverIcon }
   ];
 
   useEffect(() => {
@@ -56,6 +60,12 @@ const AdminPanel = () => {
         case 'events':
           const eventsResponse = await collectorsAPI.getEvents();
           setEvents(eventsResponse.data.data || []);
+          break;
+        case 'restoration':
+          const expertsResponse = await restorationAPI.getExperts();
+          const projectsResponse = await restorationAPI.getProjects();
+          setRestorationExperts(expertsResponse.data.data || []);
+          setRestorationProjects(projectsResponse.data.data || []);
           break;
       }
     } catch (error) {
@@ -97,6 +107,16 @@ const AdminPanel = () => {
         case 'events':
           await collectorsAPI.deleteEvent(id);
           break;
+        case 'restoration':
+          // For restoration, we need to determine if it's an expert or project
+          // We'll check if the item has specialties (expert) or budget (project)
+          const item = [...restorationExperts, ...restorationProjects].find(i => i._id === id);
+          if (item.specialties) {
+            await restorationAPI.deleteExpert(id);
+          } else {
+            await restorationAPI.deleteProject(id);
+          }
+          break;
       }
       toast.success('Item deleted successfully');
       fetchData();
@@ -124,6 +144,13 @@ const AdminPanel = () => {
           case 'events':
             await collectorsAPI.createEvent(formData);
             break;
+          case 'restoration':
+            if (formData.type === 'expert') {
+              await restorationAPI.createExpert(formData);
+            } else {
+              await restorationAPI.createProject(formData);
+            }
+            break;
         }
         toast.success('Item created successfully');
       } else {
@@ -133,6 +160,13 @@ const AdminPanel = () => {
             break;
           case 'mystery-bids':
             await mysteryBidsAPI.update(selectedItem.id, formData);
+            break;
+          case 'restoration':
+            if (formData.type === 'expert') {
+              await restorationAPI.updateExpert(selectedItem.id, formData);
+            } else {
+              await restorationAPI.updateProject(selectedItem.id, formData);
+            }
             break;
           // Groups and events updates would need separate endpoints
         }
@@ -152,7 +186,9 @@ const AdminPanel = () => {
       activeTab === 'time-capsule' ? timeCapsules :
       activeTab === 'mystery-bids' ? mysteryBids :
       activeTab === 'groups' ? groups :
-      events;
+      activeTab === 'events' ? events :
+      activeTab === 'restoration' ? [...restorationExperts, ...restorationProjects] :
+      [];
 
     return (
       <div className="overflow-x-auto">
@@ -160,13 +196,15 @@ const AdminPanel = () => {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {activeTab === 'time-capsule' || activeTab === 'mystery-bids' ? 'Title' : 'Name'}
+                {activeTab === 'time-capsule' || activeTab === 'mystery-bids' ? 'Title' : 
+                 activeTab === 'restoration' ? 'Name/Title' : 'Name'}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {activeTab === 'time-capsule' ? 'Period' :
                  activeTab === 'mystery-bids' ? 'Category' :
                  activeTab === 'groups' ? 'Members' :
-                 'Date'}
+                 activeTab === 'events' ? 'Date' :
+                 'Type/Budget'}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
@@ -191,7 +229,11 @@ const AdminPanel = () => {
                   {activeTab === 'time-capsule' ? item.period :
                    activeTab === 'mystery-bids' ? item.category :
                    activeTab === 'groups' ? `${item.memberCount} members` :
-                   new Date(item.date).toLocaleDateString()}
+                   activeTab === 'events' ? new Date(item.date).toLocaleDateString() :
+                   activeTab === 'restoration' ? (
+                     item.specialties ? 'Expert' : 
+                     item.budget ? `$${item.budget.min}-${item.budget.max}` : 'Project'
+                   ) : ''}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -301,7 +343,221 @@ const AdminPanel = () => {
       );
     }
 
-    // Similar forms for other types would go here
+    if (activeTab === 'restoration') {
+      return (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <select
+              value={formData.type || 'expert'}
+              onChange={(e) => setFormData({...formData, type: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              required
+            >
+              <option value="expert">Expert</option>
+              <option value="project">Project</option>
+            </select>
+          </div>
+          
+          {formData.type === 'expert' ? (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  value={formData.name || ''}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input
+                  type="text"
+                  value={formData.title || ''}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Specialties (comma-separated)</label>
+                <input
+                  type="text"
+                  value={formData.specialties ? formData.specialties.join(', ') : ''}
+                  onChange={(e) => setFormData({...formData, specialties: e.target.value.split(', ').filter(s => s.trim())})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Experience (years)</label>
+                <input
+                  type="number"
+                  value={formData.experience || ''}
+                  onChange={(e) => setFormData({...formData, experience: Number(e.target.value)})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <input
+                  type="text"
+                  value={formData.location || ''}
+                  onChange={(e) => setFormData({...formData, location: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Rate</label>
+                  <input
+                    type="number"
+                    value={formData.hourlyRate?.min || ''}
+                    onChange={(e) => setFormData({
+                      ...formData, 
+                      hourlyRate: {...(formData.hourlyRate || {}), min: Number(e.target.value)}
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Rate</label>
+                  <input
+                    type="number"
+                    value={formData.hourlyRate?.max || ''}
+                    onChange={(e) => setFormData({
+                      ...formData, 
+                      hourlyRate: {...(formData.hourlyRate || {}), max: Number(e.target.value)}
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                  <input
+                    type="text"
+                    value={formData.hourlyRate?.currency || 'USD'}
+                    onChange={(e) => setFormData({
+                      ...formData, 
+                      hourlyRate: {...(formData.hourlyRate || {}), currency: e.target.value}
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input
+                  type="text"
+                  value={formData.title || ''}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  value={formData.description || ''}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  rows={3}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select
+                  value={formData.category || ''}
+                  onChange={(e) => setFormData({...formData, category: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                >
+                  <option value="">Select Category</option>
+                  <option value="Furniture">Furniture</option>
+                  <option value="Artwork">Artwork</option>
+                  <option value="Books">Books</option>
+                  <option value="Jewelry">Jewelry</option>
+                  <option value="Decorative">Decorative</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <input
+                  type="text"
+                  value={formData.location || ''}
+                  onChange={(e) => setFormData({...formData, location: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Budget</label>
+                  <input
+                    type="number"
+                    value={formData.budget?.min || ''}
+                    onChange={(e) => setFormData({
+                      ...formData, 
+                      budget: {...(formData.budget || {}), min: Number(e.target.value)}
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Budget</label>
+                  <input
+                    type="number"
+                    value={formData.budget?.max || ''}
+                    onChange={(e) => setFormData({
+                      ...formData, 
+                      budget: {...(formData.budget || {}), max: Number(e.target.value)}
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                  <input
+                    type="text"
+                    value={formData.budget?.currency || 'USD'}
+                    onChange={(e) => setFormData({
+                      ...formData, 
+                      budget: {...(formData.budget || {}), currency: e.target.value}
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required
+                  />
+                </div>
+              </div>
+            </>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Bio/Additional Info</label>
+            <textarea
+              value={formData.bio || ''}
+              onChange={(e) => setFormData({...formData, bio: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              rows={3}
+            />
+          </div>
+        </div>
+      );
+    }
+
     return <div>Form for {activeTab}</div>;
   };
 
@@ -310,7 +566,7 @@ const AdminPanel = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-          <p className="text-gray-600 mt-2">Manage Time Capsule, Mystery Bids, Groups, and Events</p>
+          <p className="text-gray-600 mt-2">Manage Time Capsule, Mystery Bids, Groups, Events, and Restoration</p>
         </div>
 
         {/* Tabs */}

@@ -339,13 +339,7 @@ const AuctionDetail = () => {
                   <span>{isWatching ? 'Watching' : 'Watch'}</span>
                 </button>
                 
-                <Link
-                  to={`/items/${auction.id}`}
-                  className="flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md border border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100"
-                >
-                  <EyeIcon className="w-5 h-5" />
-                  <span>AR View</span>
-                </Link>
+
               </div>
             </div>
 

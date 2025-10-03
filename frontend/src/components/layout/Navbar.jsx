@@ -42,7 +42,6 @@ const Navbar = () => {
   const publicLinks = [
     { name: 'Home', path: '/', icon: HomeIcon },
     { name: 'Items', path: '/items', icon: CubeIcon },
-    { name: 'Leaderboard', path: '/leaderboard', icon: TrophyIcon },
     { name: 'Time Capsule', path: '/time-capsule', icon: ClockIcon },
     { name: 'Mystery Bids', path: '/mystery-bids', icon: QuestionMarkCircleIcon },
     { name: 'Restoration', path: '/restoration', icon: WrenchScrewdriverIcon },

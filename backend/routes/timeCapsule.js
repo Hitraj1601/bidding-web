@@ -4,6 +4,81 @@ import TimeCapsule from '../models/TimeCapsule.js';
 
 const router = express.Router();
 
+// @route   GET /api/time-capsule/stats
+// @desc    Get time capsule statistics
+// @access  Public
+router.get('/stats', async (req, res) => {
+  try {
+    const distinctExperts = await TimeCapsule.distinct('expert');
+    const totalExperts = distinctExperts.filter(expert => expert && expert.trim() !== '').length;
+    const activeAuctions = await TimeCapsule.countDocuments({ status: 'active' });
+    const totalItems = await TimeCapsule.countDocuments();
+    
+    // Calculate average cultural impact
+    const impactData = await TimeCapsule.aggregate([
+      { $match: { culturalImpact: { $exists: true } } },
+      { $group: { _id: null, averageImpact: { $avg: '$culturalImpact' } } }
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        totalExperts: totalExperts || 0,
+        activeAuctions: activeAuctions || 0,
+        totalItems: totalItems || 0,
+        averageCulturalImpact: impactData[0]?.averageImpact?.toFixed(1) || '0.0'
+      }
+    });
+  } catch (error) {
+    console.error('Get time capsule stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get time capsule statistics'
+    });
+  }
+});
+
+// @route   GET /api/time-capsule/periods
+// @desc    Get available historical periods with counts
+// @access  Public
+router.get('/periods', async (req, res) => {
+  try {
+    const periods = await TimeCapsule.aggregate([
+      { $match: { status: { $in: ['upcoming', 'active'] } } },
+      { $group: { _id: '$period', count: { $sum: 1 } } },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const periodMap = {
+      ancient: 'Ancient Era',
+      medieval: 'Medieval',
+      renaissance: 'Renaissance',
+      industrial: 'Industrial Age',
+      modern: 'Modern Era'
+    };
+
+    const formattedPeriods = [
+      { id: 'all', name: 'All Periods', count: periods.reduce((sum, p) => sum + p.count, 0) },
+      ...periods.map(p => ({
+        id: p._id,
+        name: periodMap[p._id] || p._id,
+        count: p.count
+      }))
+    ];
+
+    res.json({
+      success: true,
+      data: formattedPeriods
+    });
+  } catch (error) {
+    console.error('Get periods error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get historical periods'
+    });
+  }
+});
+
 // @route   GET /api/time-capsule
 // @desc    Get all time capsule auctions
 // @access  Public
@@ -43,46 +118,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// @route   GET /api/time-capsule/periods
-// @desc    Get historical periods with counts
-// @access  Public
-router.get('/periods', async (req, res) => {
-  try {
-    const periods = await TimeCapsule.aggregate([
-      { $match: { status: { $in: ['upcoming', 'active'] } } },
-      { $group: { _id: '$period', count: { $sum: 1 } } },
-      { $sort: { _id: 1 } }
-    ]);
 
-    const periodMap = {
-      ancient: 'Ancient Era',
-      medieval: 'Medieval',
-      renaissance: 'Renaissance',
-      industrial: 'Industrial Age',
-      modern: 'Modern Era'
-    };
-
-    const formattedPeriods = [
-      { id: 'all', name: 'All Periods', count: periods.reduce((sum, p) => sum + p.count, 0) },
-      ...periods.map(p => ({
-        id: p._id,
-        name: periodMap[p._id] || p._id,
-        count: p.count
-      }))
-    ];
-
-    res.json({
-      success: true,
-      data: formattedPeriods
-    });
-  } catch (error) {
-    console.error('Get periods error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get historical periods'
-    });
-  }
-});
 
 // @route   GET /api/time-capsule/:id
 // @desc    Get specific time capsule auction

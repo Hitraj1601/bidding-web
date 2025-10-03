@@ -20,7 +20,7 @@ import AuctionDetail from './pages/auctions/AuctionDetail';
 import ItemDetail from './pages/items/ItemDetail';
 import CreateListing from './pages/items/CreateListing';
 import Profile from './pages/Profile';
-import Leaderboard from './pages/Leaderboard';
+
 import CollectorNetwork from './pages/CollectorNetwork';
 import ProvenanceTracker from './pages/ProvenanceTracker';
 import TimeCapsuleAuctions from './pages/TimeCapsuleAuctions';
@@ -68,7 +68,7 @@ function App() {
             <Route path="/oauth-callback" element={<OAuthCallback />} />
             <Route path="/auctions/:id" element={<AuctionDetail />} />
             <Route path="/items/:id" element={<ItemDetail />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
+
             <Route path="/time-capsule" element={<TimeCapsuleAuctions />} />
             <Route path="/mystery-bids" element={<MysteryBids />} />
             <Route path="/restoration" element={<RestorationMarketplace />} />
