@@ -30,10 +30,11 @@ const configurePassport = () => {
   passport.use(new GoogleStrategy.Strategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/api/auth/google/callback"
+    callbackURL: `${process.env.SERVER_URL || 'http://localhost:5001'}/api/auth/google/callback`
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
+      console.log('🔵 Google OAuth Strategy executed, profile received:', profile.id);
       // Check if user already exists with Google ID
       let user = await User.findOne({ googleId: profile.id });
 
@@ -58,8 +59,8 @@ const configurePassport = () => {
         googleId: profile.id,
         username: profile.emails[0].value.split('@')[0] + '_' + Date.now(),
         email: profile.emails[0].value,
-        firstName: profile.name.givenName,
-        lastName: profile.name.familyName,
+        firstName: profile.name.givenName || 'User',
+        lastName: profile.name.familyName || '',
         profilePicture: profile.photos[0]?.value,
         isEmailVerified: true, // Google emails are verified
         authProvider: 'google'

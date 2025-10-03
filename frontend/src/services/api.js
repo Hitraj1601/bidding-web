@@ -116,4 +116,40 @@ export const statsAPI = {
   getTopCategories: () => api.get('/stats/categories'),
 };
 
+// Collectors API
+export const collectorsAPI = {
+  getAll: () => api.get('/collectors'),
+  getGroups: () => api.get('/collectors/groups'),
+  getEvents: () => api.get('/collectors/events'),
+  follow: (id) => api.post(`/collectors/follow/${id}`),
+  unfollow: (id) => api.post(`/collectors/follow/${id}`), // Same endpoint, toggles
+  createGroup: (data) => api.post('/collectors/groups', data),
+  joinGroup: (id) => api.post(`/collectors/groups/${id}/join`),
+  deleteGroup: (id) => api.delete(`/collectors/groups/${id}`),
+  createEvent: (data) => api.post('/collectors/events', data),
+  registerEvent: (id) => api.post(`/collectors/events/${id}/register`),
+  deleteEvent: (id) => api.delete(`/collectors/events/${id}`),
+};
+
+// Time Capsule API
+export const timeCapsuleAPI = {
+  getAll: (params) => api.get('/time-capsule', { params }),
+  getById: (id) => api.get(`/time-capsule/${id}`),
+  getPeriods: () => api.get('/time-capsule/periods'),
+  create: (data) => api.post('/time-capsule', data),
+  update: (id, data) => api.put(`/time-capsule/${id}`, data),
+  delete: (id) => api.delete(`/time-capsule/${id}`),
+};
+
+// Mystery Bids API
+export const mysteryBidsAPI = {
+  getAll: (params) => api.get('/mystery-bids', { params }),
+  getById: (id) => api.get(`/mystery-bids/${id}`),
+  getCategories: () => api.get('/mystery-bids/categories'),
+  create: (data) => api.post('/mystery-bids', data),
+  update: (id, data) => api.put(`/mystery-bids/${id}`, data),
+  delete: (id) => api.delete(`/mystery-bids/${id}`),
+  placeBid: (id, bidData) => api.post(`/mystery-bids/${id}/bid`, bidData),
+};
+
 export default api;

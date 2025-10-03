@@ -145,20 +145,7 @@ const auctionSchema = new mongoose.Schema({
         revealDate: Date
       }]
     },
-    vr: {
-      hasVRExperience: {
-        type: Boolean,
-        default: false
-      },
-      vrRoomUrl: String,
-      arModels: [{
-        item: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Item'
-        },
-        modelUrl: String
-      }]
-    }
+
   },
   
   // Social features

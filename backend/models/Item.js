@@ -67,10 +67,7 @@ const itemSchema = new mongoose.Schema({
     publicId: String,
     caption: String
   }],
-  arModel: {
-    url: String,
-    publicId: String
-  },
+
   
   // Seller information
   seller: {
@@ -171,30 +168,7 @@ const itemSchema = new mongoose.Schema({
     ref: 'Provenance'
   }],
   
-  // AI Analysis
-  aiAnalysis: {
-    estimatedValue: {
-      min: Number,
-      max: Number,
-      confidence: Number
-    },
-    estimatedAge: {
-      min: Number,
-      max: Number,
-      confidence: Number
-    },
-    style: String,
-    period: String,
-    authenticity: {
-      score: Number,
-      flags: [String]
-    },
-    condition: {
-      score: Number,
-      notes: [String]
-    },
-    lastAnalyzed: Date
-  },
+
   
   // Social features
   views: {

@@ -2,7 +2,7 @@
 
 ## 🎯 Project Overview
 
-A comprehensive antique bidding platform featuring **10 unique innovations** that revolutionize the antique collecting experience. Built with the MERN stack (MongoDB, Express.js, React, Node.js) with real-time bidding, advanced authentication, and cutting-edge features.
+A comprehensive antique bidding platform featuring **8 unique innovations** that revolutionize the antique collecting experience. Built with the MERN stack (MongoDB, Express.js, React, Node.js) with real-time bidding, advanced authentication, and cutting-edge features.
 
 ## ✨ Core Features
 
@@ -12,7 +12,7 @@ A comprehensive antique bidding platform featuring **10 unique innovations** tha
 - **Protected Routes** - Role-based access control
 - **Password Reset** - Email-based password recovery
 
-### 🚀 10 Unique Platform Features
+### 🚀 8 Unique Platform Features
 
 #### 1. 🔍 **Provenance Tracker**
 - Complete ownership history timeline
@@ -20,55 +20,45 @@ A comprehensive antique bidding platform featuring **10 unique innovations** tha
 - Expert verification system
 - Historical significance tracking
 
-#### 2. 🥽 **AR/VR Preview System**
-- 3D item visualization
-- Augmented reality mobile integration
-- Virtual reality room placement
-- Interactive hotspots with detailed information
 
-#### 3. 🤖 **AI-Powered Valuation**
-- Machine learning price estimation
-- Market trend analysis
-- Comparable sales data
-- Expert validation system
 
-#### 4. ⏳ **Time-Capsule Auctions**
+#### 2. ⏳ **Time-Capsule Auctions**
 - Era-specific auction events
 - Historical significance scoring
 - Cultural impact ratings
 - Period-accurate presentation
 
-#### 5. 👥 **Collector's Network**
+#### 3. 👥 **Collector's Network**
 - Social networking for collectors
 - Expert profiles and portfolios
 - Community events and meetups
 - Knowledge sharing forums
 
-#### 6. 🔧 **Restoration Marketplace**
+#### 4. 🔧 **Restoration Marketplace**
 - Expert craftspeople directory
 - Restoration project management
 - Before/after galleries
 - Skill matching system
 
-#### 7. 🎭 **Mystery Bid System**
+#### 5. 🎭 **Mystery Bid System**
 - Anonymous bidding until reveal threshold
 - Progressive item disclosure
 - Reputation-based access levels
 - Surprise collection reveals
 
-#### 8. 🏆 **Gamified Prestige System**
+#### 6. 🏆 **Gamified Prestige System**
 - Achievement badges and levels
 - Leaderboards across categories
 - Streak tracking and rewards
 - Community recognition
 
-#### 9. ✅ **Ethical Certification**
+#### 7. ✅ **Ethical Certification**
 - Authenticity verification
 - Provenance documentation
 - Legal compliance tracking
 - Ethical sourcing validation
 
-#### 10. 🛡️ **Auction Guardian (Fraud Prevention)**
+#### 8. 🛡️ **Auction Guardian (Fraud Prevention)**
 - AI-powered fraud detection
 - Behavioral analysis
 - Real-time risk assessment
@@ -146,7 +136,7 @@ frontend/src/
 │   ├── Leaderboard.jsx - Rankings
 │   ├── TimeCapsuleAuctions.jsx - Historical auctions
 │   ├── MysteryBids.jsx - Anonymous bidding
-│   ├── ARPreview.jsx - 3D/AR/VR viewer
+
 │   ├── CollectorNetwork.jsx - Social features
 │   ├── ProvenanceTracker.jsx - History tracking
 │   └── RestorationMarketplace.jsx - Expert services
@@ -232,20 +222,19 @@ CLOUDINARY_API_SECRET=your-api-secret
 
 ### For Collectors
 1. **Register** → Verify email → Complete profile
-2. **Browse Auctions** → Use AR/VR preview → Join collector networks  
+2. **Browse Auctions** → View detailed images → Join collector networks  
 3. **Place Bids** → Track provenance → Engage in mystery auctions
 4. **Build Reputation** → Earn badges → Climb leaderboards
 
 ### For Sellers  
 1. **Create Listing** → Upload images → Document provenance
-2. **Set Auction Terms** → Choose mystery/standard → Enable AR preview
+2. **Set Auction Terms** → Choose mystery/standard → Upload high-quality images
 3. **Monitor Bids** → Real-time updates → Fraud protection
 4. **Complete Sales** → Secure payments → Build reputation
 
 ## 🎯 Unique Value Propositions
 
 ### Market Differentiation
-- **AR/VR Integration** - First platform with immersive 3D previews
 - **Provenance Tracking** - Complete ownership history validation
 - **Mystery Auctions** - Anonymous bidding with reveals
 - **Social Networking** - Community-driven collecting

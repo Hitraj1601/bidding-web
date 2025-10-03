@@ -3,8 +3,8 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-// import session from 'express-session'; // DISABLED - OAuth functionality commented out
-// import passport from 'passport'; // DISABLED - OAuth functionality commented out
+import session from 'express-session';
+import passport from 'passport';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
@@ -18,14 +18,16 @@ import auctionRoutes from './routes/auctions.js';
 import provenanceRoutes from './routes/provenance.js';
 import collectorRoutes from './routes/collectors.js';
 import restorationRoutes from './routes/restoration.js';
-import aiRoutes from './routes/ai.js';
 import statsRoutes from './routes/stats.js';
-// import oauthRoutes from './routes/oauth.js'; // DISABLED - OAuth functionality commented out
+import oauthRoutes from './routes/oauth.js';
+import emailTestRoutes from './routes/emailTest.js';
+import timeCapsuleRoutes from './routes/timeCapsule.js';
+import mysteryBidsRoutes from './routes/mysteryBids.js';
 
 // Import middleware and config
 import { authenticateToken } from './middleware/auth.js';
 import { setupSocket } from './socket/socket.js';
-// import configurePassport from './config/passport.js'; // DISABLED - OAuth functionality commented out
+import configurePassport from './config/passport.js';
 
 dotenv.config();
 
@@ -61,23 +63,23 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Session configuration for OAuth - DISABLED
-// app.use(session({
-//   secret: process.env.JWT_SECRET || 'fallback-secret',
-//   resave: false,
-//   saveUninitialized: false,
-//   cookie: {
-//     secure: process.env.NODE_ENV === 'production',
-//     maxAge: 24 * 60 * 60 * 1000 // 24 hours
-//   }
-// }));
+// Session configuration for OAuth
+app.use(session({
+  secret: process.env.JWT_SECRET || 'fallback-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
 
-// Passport middleware - DISABLED
-// app.use(passport.initialize());
-// app.use(passport.session());
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
-// Configure passport strategies - DISABLED
-// configurePassport();
+// Configure passport strategies
+configurePassport();
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/antique_bidding')
@@ -95,7 +97,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
-// app.use('/api/auth', oauthRoutes); // OAuth and payment routes - DISABLED
+app.use('/api/auth', oauthRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/bids', bidRoutes);
@@ -103,8 +105,10 @@ app.use('/api/auctions', auctionRoutes);
 app.use('/api/provenance', provenanceRoutes);
 app.use('/api/collectors', collectorRoutes);
 app.use('/api/restoration', restorationRoutes);
-app.use('/api/ai', aiRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/email', emailTestRoutes);
+app.use('/api/time-capsule', timeCapsuleRoutes);
+app.use('/api/mystery-bids', mysteryBidsRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

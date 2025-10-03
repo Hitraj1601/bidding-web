@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { collectorsAPI } from '../services/api';
+import { toast } from 'react-hot-toast';
 import {
   UserGroupIcon,
   StarIcon,
@@ -36,216 +38,43 @@ const CollectorNetwork = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
-      setCollectors([
-        {
-          id: 1,
-          name: "Eleanor Whitmore",
-          avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=100",
-          location: "London, UK",
-          specialization: "Victorian Jewelry",
-          level: "Master Collector",
-          levelColor: "text-purple-600",
-          reputation: 4.9,
-          yearsCollecting: 15,
-          itemsOwned: 247,
-          totalValue: "$1.2M",
-          followers: 1250,
-          following: 380,
-          isFollowing: false,
-          recentActivity: [
-            "Won Victorian Diamond Tiara",
-            "Listed Edwardian Brooch Collection",
-            "Shared expertise on Georgian Rings"
-          ],
-          expertise: ["Authentication", "Historical Context", "Market Valuation"],
-          achievements: [
-            "Top Bidder 2023",
-            "Authentication Expert",
-            "Community Leader",
-            "Rare Find Master"
-          ],
-          bio: "Passionate Victorian jewelry collector with expertise in authentication and historical provenance. Love sharing knowledge with fellow collectors.",
-          joinDate: "2019-03-15",
-          verifiedExpert: true
-        },
-        {
-          id: 2,
-          name: "Marcus Chen",
-          avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
-          location: "San Francisco, CA",
-          specialization: "Chinese Antiquities",
-          level: "Expert Collector",
-          levelColor: "text-gold-600",
-          reputation: 4.8,
-          yearsCollecting: 12,
-          itemsOwned: 189,
-          totalValue: "$850K",
-          followers: 980,
-          following: 250,
-          isFollowing: true,
-          recentActivity: [
-            "Acquired Ming Dynasty Vase",
-            "Hosted Authentication Workshop",
-            "Mentored 3 new collectors"
-          ],
-          expertise: ["Ming Dynasty", "Porcelain", "Calligraphy"],
-          achievements: [
-            "Cultural Preservation Award",
-            "Expert Mentor",
-            "Rare Collections Master"
-          ],
-          bio: "Dedicated to preserving Chinese cultural heritage through collecting. Always happy to help authenticate pieces and share historical knowledge.",
-          joinDate: "2020-01-20",
-          verifiedExpert: true
-        },
-        {
-          id: 3,
-          name: "Isabella Rodriguez",
-          avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100",
-          location: "Madrid, Spain",
-          specialization: "Art Nouveau",
-          level: "Rising Star",
-          levelColor: "text-green-600",
-          reputation: 4.6,
-          yearsCollecting: 5,
-          itemsOwned: 78,
-          totalValue: "$320K",
-          followers: 450,
-          following: 180,
-          isFollowing: false,
-          recentActivity: [
-            "Discovered hidden Lalique piece",
-            "Won Tiffany Lamp auction",
-            "Started Art Nouveau study group"
-          ],
-          expertise: ["Glass Art", "Decorative Arts", "Period Research"],
-          achievements: [
-            "Rising Collector 2023",
-            "Discovery Expert",
-            "Community Builder"
-          ],
-          bio: "Art Nouveau enthusiast with a keen eye for undiscovered gems. Love the artistic movement's fusion of nature and craftsmanship.",
-          joinDate: "2021-06-10",
-          verifiedExpert: false
-        }
-      ]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch all data in parallel
+        const [collectorsRes, groupsRes, eventsRes] = await Promise.all([
+          collectorsAPI.getAll(),
+          collectorsAPI.getGroups(),
+          collectorsAPI.getEvents()
+        ]);
 
-      setGroups([
-        {
-          id: 1,
-          name: "Victorian Era Collectors",
-          description: "Dedicated to preserving and discussing Victorian antiques and collectibles",
-          memberCount: 1247,
-          category: "Historical Period",
-          privacy: "Public",
-          image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300",
-          activity: "Very Active",
-          recentPosts: [
-            "Authentication help needed - Victorian mourning jewelry",
-            "Amazing find at estate sale - Whitby jet collection",
-            "Discussion: Victorian silver hallmarks identification"
-          ],
-          moderators: ["Eleanor Whitmore", "James Patterson"],
-          tags: ["Victorian", "Jewelry", "Silver", "Furniture"],
-          joined: false
-        },
-        {
-          id: 2,
-          name: "Asian Art & Antiques",
-          description: "Community for collectors of Asian art, ceramics, and cultural artifacts",
-          memberCount: 892,
-          category: "Cultural/Regional",
-          privacy: "Public",
-          image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300",
-          activity: "Active",
-          recentPosts: [
-            "Ming dynasty authentication workshop this weekend",
-            "Rare Satsuma vase up for discussion",
-            "Japanese woodblock print identification guide"
-          ],
-          moderators: ["Marcus Chen", "Yuki Tanaka"],
-          tags: ["Chinese", "Japanese", "Ceramics", "Art"],
-          joined: true
-        },
-        {
-          id: 3,
-          name: "Art Nouveau & Art Deco",
-          description: "Celebrating the artistic movements that shaped decorative arts",
-          memberCount: 634,
-          category: "Art Movement",
-          privacy: "Public",
-          image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=300",
-          activity: "Growing",
-          recentPosts: [
-            "Tiffany Studios lamp authentication tips",
-            "Lalique vs. Daum: Identifying Art Nouveau glass",
-            "Art Deco furniture market trends discussion"
-          ],
-          moderators: ["Isabella Rodriguez", "Pierre Dubois"],
-          tags: ["Art Nouveau", "Art Deco", "Glass", "Furniture"],
-          joined: false
+        if (collectorsRes.data.success) {
+          setCollectors(collectorsRes.data.data || []);
         }
-      ]);
-
-      setEvents([
-        {
-          id: 1,
-          title: "Victorian Jewelry Authentication Workshop",
-          date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          time: "2:00 PM - 4:00 PM EST",
-          type: "Workshop",
-          format: "Virtual",
-          host: "Eleanor Whitmore",
-          hostAvatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=50",
-          attendees: 45,
-          maxAttendees: 50,
-          price: "Free",
-          description: "Learn to authenticate Victorian jewelry pieces with expert Eleanor Whitmore. Covers hallmarks, materials, and period characteristics.",
-          category: "Education",
-          difficulty: "Beginner to Intermediate",
-          isRegistered: false
-        },
-        {
-          id: 2,
-          title: "Collector Meetup: San Francisco Bay Area",
-          date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-          time: "1:00 PM - 5:00 PM PST",
-          type: "Meetup",
-          format: "In-Person",
-          location: "San Francisco, CA",
-          host: "Marcus Chen",
-          hostAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50",
-          attendees: 23,
-          maxAttendees: 30,
-          price: "$15",
-          description: "Monthly collector meetup with show-and-tell, expert discussions, and networking. Bring your favorite recent finds!",
-          category: "Social",
-          difficulty: "All Levels",
-          isRegistered: true
-        },
-        {
-          id: 3,
-          title: "Art Nouveau Glass: History & Identification",
-          date: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000),
-          time: "7:00 PM - 8:30 PM CET",
-          type: "Lecture",
-          format: "Virtual",
-          host: "Isabella Rodriguez",
-          hostAvatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50",
-          attendees: 67,
-          maxAttendees: 100,
-          price: "$25",
-          description: "Comprehensive overview of Art Nouveau glass makers including Tiffany, Lalique, and Daum. Includes identification techniques.",
-          category: "Education",
-          difficulty: "Intermediate",
-          isRegistered: false
+        
+        if (groupsRes.data.success) {
+          setGroups(groupsRes.data.data || []);
         }
-      ]);
+        
+        if (eventsRes.data.success) {
+          setEvents(eventsRes.data.data || []);
+        }
+        
+      } catch (error) {
+        console.error('Error fetching collector network data:', error);
+        toast.error('Failed to load collector network data');
+        
+        // Set empty arrays on error to prevent crashes
+        setCollectors([]);
+        setGroups([]);
+        setEvents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setLoading(false);
-    }, 1000);
+    fetchData();
   }, []);
 
   const categories = [
@@ -259,12 +88,23 @@ const CollectorNetwork = () => {
     { id: 'events', name: 'Events', icon: CalendarDaysIcon, count: events.length }
   ];
 
-  const handleFollow = (collectorId) => {
-    setCollectors(collectors.map(collector => 
-      collector.id === collectorId 
-        ? { ...collector, isFollowing: !collector.isFollowing }
-        : collector
-    ));
+  const handleFollow = async (collectorId) => {
+    try {
+      const response = await collectorsAPI.follow(collectorId);
+      
+      if (response.data.success) {
+        setCollectors(collectors.map(collector => 
+          collector.id === collectorId 
+            ? { ...collector, isFollowing: response.data.isFollowing }
+            : collector
+        ));
+        
+        toast.success(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error following/unfollowing collector:', error);
+      toast.error('Failed to update follow status');
+    }
   };
 
   const handleJoinGroup = (groupId) => {
@@ -473,21 +313,21 @@ const CollectorNetwork = () => {
                       </span>
                       <div className="flex items-center space-x-1">
                         <StarIcon className="w-4 h-4 text-yellow-400 fill-current" />
-                        <span className="text-sm text-gray-600">{collector.reputation}</span>
+                        <span className="text-sm text-gray-600">{collector.reputation || 0}</span>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-3 mb-4 text-center">
                       <div>
-                        <div className="text-sm font-semibold text-gray-900">{collector.itemsOwned}</div>
+                        <div className="text-sm font-semibold text-gray-900">{collector.itemsOwned || 0}</div>
                         <div className="text-xs text-gray-500">Items</div>
                       </div>
                       <div>
-                        <div className="text-sm font-semibold text-gray-900">{collector.followers}</div>
+                        <div className="text-sm font-semibold text-gray-900">{collector.followers || 0}</div>
                         <div className="text-xs text-gray-500">Followers</div>
                       </div>
                       <div>
-                        <div className="text-sm font-semibold text-gray-900">{collector.yearsCollecting}y</div>
+                        <div className="text-sm font-semibold text-gray-900">{collector.yearsCollecting || 0}y</div>
                         <div className="text-xs text-gray-500">Experience</div>
                       </div>
                     </div>
@@ -495,7 +335,7 @@ const CollectorNetwork = () => {
                     <div className="mb-4">
                       <div className="text-xs text-gray-500 mb-1">Recent Activity:</div>
                       <div className="space-y-1">
-                        {collector.recentActivity.slice(0, 2).map((activity, idx) => (
+                        {(collector.recentActivity || []).slice(0, 2).map((activity, idx) => (
                           <div key={idx} className="text-xs text-gray-600 flex items-start space-x-1">
                             <div className="w-1 h-1 bg-purple-400 rounded-full mt-1.5 flex-shrink-0"></div>
                             <span className="line-clamp-1">{activity}</span>
@@ -554,7 +394,7 @@ const CollectorNetwork = () => {
                           <div className="flex items-center space-x-4 text-sm text-gray-500">
                             <div className="flex items-center space-x-1">
                               <UserGroupIcon className="w-4 h-4" />
-                              <span>{group.memberCount.toLocaleString()} members</span>
+                              <span>{(group.memberCount || 0).toLocaleString()} members</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <TagIcon className="w-4 h-4" />
@@ -652,11 +492,11 @@ const CollectorNetwork = () => {
                           <div className="space-y-2">
                             <div className="flex items-center space-x-2">
                               <CalendarDaysIcon className="w-4 h-4" />
-                              <span>{event.date.toLocaleDateString()}</span>
+                              <span>{event.date ? new Date(event.date).toLocaleDateString() : 'Date TBD'}</span>
                             </div>
                             <div className="flex items-center space-x-2">
                               <ClockIcon className="w-4 h-4" />
-                              <span>{event.time}</span>
+                              <span>{event.time || 'Time TBD'}</span>
                             </div>
                             {event.location && (
                               <div className="flex items-center space-x-2">
@@ -669,10 +509,10 @@ const CollectorNetwork = () => {
                           <div className="space-y-2">
                             <div className="flex items-center space-x-2">
                               <UserGroupIcon className="w-4 h-4" />
-                              <span>{event.attendees}/{event.maxAttendees} attendees</span>
+                              <span>{event.attendees || 0}/{event.maxAttendees || 0} attendees</span>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <span className="font-medium">Price: {event.price}</span>
+                              <span className="font-medium">Price: {event.price || 'Free'}</span>
                             </div>
                             <div className="flex items-center space-x-2">
                               <img
@@ -680,7 +520,7 @@ const CollectorNetwork = () => {
                                 alt={event.host}
                                 className="w-6 h-6 rounded-full"
                               />
-                              <span>Hosted by {event.host}</span>
+                              <span>Hosted by {event.host || 'TBD'}</span>
                             </div>
                           </div>
                         </div>
@@ -702,7 +542,7 @@ const CollectorNetwork = () => {
                     
                     <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                       <div className="text-sm text-gray-500">
-                        Category: {event.category}
+                        Category: {event.category || 'General'}
                       </div>
                       <div className="flex space-x-2">
                         <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200">

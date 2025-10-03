@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { timeCapsuleAPI } from '../services/api';
+import { toast } from 'react-hot-toast';
 import {
   ClockIcon,
   StarIcon,
@@ -19,106 +21,44 @@ const TimeCapsuleAuctions = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('all');
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
-      setHistoricalPeriods([
-        { id: 'all', name: 'All Periods', count: 45 },
-        { id: 'ancient', name: 'Ancient Era', count: 8 },
-        { id: 'medieval', name: 'Medieval', count: 12 },
-        { id: 'renaissance', name: 'Renaissance', count: 15 },
-        { id: 'industrial', name: 'Industrial Age', count: 10 }
-      ]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch periods and time capsule items in parallel
+        const [periodsRes, itemsRes] = await Promise.all([
+          timeCapsuleAPI.getPeriods(),
+          timeCapsuleAPI.getAll({ period: selectedPeriod, status: 'active' })
+        ]);
 
-      setTimeCapsuleItems([
-        {
-          id: 1,
-          title: "Napoleon's Campaign Map",
-          era: "Napoleonic Wars (1803-1815)",
-          period: "industrial",
-          description: "Original military campaign map used during Napoleon's Russian campaign",
-          currentBid: 45000,
-          startingBid: 20000,
-          endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400",
-          bidCount: 23,
-          significance: "Battle of Borodino preparation",
-          provenance: "Russian State Museum",
-          rarity: "Museum Quality",
-          culturalImpact: 9.5,
-          historicalImportance: "Critical military document that shaped European history",
-          expert: "Dr. Marie Dubois, Napoleonic Historian",
-          authentication: "Multiple expert verifications",
-          location: "Moscow, Russia",
-          discoveryStory: "Found in the private collection of a Russian noble family, hidden for over 200 years."
-        },
-        {
-          id: 2,
-          title: "Viking Silver Thor's Hammer",
-          era: "Viking Age (800-1100 AD)",
-          period: "medieval",
-          description: "Exceptionally preserved silver Mjolnir pendant with runic inscriptions",
-          currentBid: 28000,
-          startingBid: 15000,
-          endTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-          image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400",
-          bidCount: 17,
-          significance: "Norse religious artifact",
-          provenance: "Excavated in Scandinavia",
-          rarity: "Extremely Rare",
-          culturalImpact: 8.8,
-          historicalImportance: "Provides insight into Viking religious practices and craftsmanship",
-          expert: "Prof. Erik Nordström, Viking Studies",
-          authentication: "Archaeological certificate",
-          location: "Bergen, Norway",
-          discoveryStory: "Unearthed during a construction project in downtown Bergen, along with other Viking artifacts."
-        },
-        {
-          id: 3,
-          title: "Leonardo da Vinci Study Sketch",
-          era: "Italian Renaissance (1450-1600)",
-          period: "renaissance",
-          description: "Previously unknown anatomical study sketch attributed to Leonardo da Vinci",
-          currentBid: 125000,
-          startingBid: 80000,
-          endTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-          image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400",
-          bidCount: 34,
-          significance: "Renaissance art masterpiece",
-          provenance: "Italian private collection",
-          rarity: "Unique",
-          culturalImpact: 9.8,
-          historicalImportance: "Advances our understanding of Renaissance artistic techniques",
-          expert: "Dr. Isabella Romano, Renaissance Art Specialist",
-          authentication: "Paper analysis, ink dating, style comparison",
-          location: "Florence, Italy",
-          discoveryStory: "Discovered in the walls of a Florentine palazzo during restoration work."
-        },
-        {
-          id: 4,
-          title: "Roman Gladiator Helmet Fragment",
-          era: "Roman Empire (27 BC - 476 AD)",
-          period: "ancient",
-          description: "Bronze helmet fragment from the Colosseum with gladiator inscriptions",
-          currentBid: 35000,
-          startingBid: 18000,
-          endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-          image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400",
-          bidCount: 19,
-          significance: "Roman gladiator combat",
-          provenance: "Vatican Museums",
-          rarity: "Museum Quality",
-          culturalImpact: 8.5,
-          historicalImportance: "Direct connection to Roman entertainment and society",
-          expert: "Dr. Marcus Antonius, Roman History",
-          authentication: "Vatican Certificate",
-          location: "Rome, Italy",
-          discoveryStory: "Excavated from the underground chambers of the Colosseum during archaeological surveys."
+        if (periodsRes.data.success) {
+          setHistoricalPeriods(periodsRes.data.data || []);
         }
-      ]);
 
-      setLoading(false);
-    }, 1000);
-  }, []);
+        if (itemsRes.data.success) {
+          setTimeCapsuleItems(itemsRes.data.data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching time capsule data:', error);
+        toast.error('Failed to load time capsule auctions');
+        
+        // Set fallback data on error
+        setHistoricalPeriods([
+          { id: 'all', name: 'All Periods', count: 0 },
+          { id: 'ancient', name: 'Ancient Era', count: 0 },
+          { id: 'medieval', name: 'Medieval', count: 0 },
+          { id: 'renaissance', name: 'Renaissance', count: 0 },
+          { id: 'industrial', name: 'Industrial Age', count: 0 }
+        ]);
+        setTimeCapsuleItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedPeriod]);
+
 
   const filteredItems = selectedPeriod === 'all' 
     ? timeCapsuleItems 
@@ -306,11 +246,11 @@ const TimeCapsuleAuctions = () => {
                       </Link>
                       
                       <Link
-                        to={`/ar-preview/${item.id}`}
+                        to={`/provenance/${item.id}`}
                         className="w-full bg-gray-900 hover:bg-gray-800 text-white py-2 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
                       >
-                        <EyeIcon className="w-4 h-4" />
-                        <span>AR Preview</span>
+                        <DocumentTextIcon className="w-4 h-4" />
+                        <span>View Provenance</span>
                       </Link>
                     </div>
                   </div>

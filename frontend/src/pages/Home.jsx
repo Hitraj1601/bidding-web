@@ -115,18 +115,7 @@ const Home = () => {
       description: "Complete ownership history and authenticity verification",
       color: "from-blue-500 to-blue-600"
     },
-    {
-      icon: EyeIcon,
-      name: "AR Preview",
-      description: "View items in your space with augmented reality",
-      color: "from-purple-500 to-purple-600"
-    },
-    {
-      icon: SparklesIcon,
-      name: "AI Valuation",
-      description: "Get instant expert valuations powered by AI",
-      color: "from-green-500 to-green-600"
-    },
+
     {
       icon: ClockIcon,
       name: "Time Capsule Auctions",
@@ -185,7 +174,7 @@ const Home = () => {
               </h1>
               <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
                 The world's most advanced marketplace for antiques and collectibles. 
-                Experience AR previews, provenance tracking, and connect with a global community of collectors.
+                Experience detailed provenance tracking, expert verification, and connect with a global community of collectors.
               </p>
             </motion.div>
 

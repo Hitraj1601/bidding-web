@@ -70,8 +70,9 @@ export const useAuthStore = create((set, get) => ({
       }
 
       const response = await axios.get('/auth/me');
+      const userData = response.data.data?.user || response.data.user || response.data;
       set({ 
-        user: response.data, 
+        user: userData, 
         isAuthenticated: true, 
         loading: false 
       });
@@ -178,9 +179,8 @@ export const useAuthStore = create((set, get) => ({
   resetPassword: async (token, newPassword) => {
     set({ loading: true });
     try {
-      await axios.post('/auth/reset-password', { 
-        token, 
-        newPassword 
+      await axios.post(`/auth/reset-password/${token}`, { 
+        password: newPassword 
       });
       set({ loading: false });
       toast.success('Password reset successful!');

@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { mysteryBidsAPI } from '../services/api';
+import { toast } from 'react-hot-toast';
 import {
   EyeSlashIcon,
   QuestionMarkCircleIcon,
@@ -24,145 +26,29 @@ const MysteryBids = () => {
   const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
-      setMysteryAuctions([
-        {
-          id: 1,
-          category: 'celebrity',
-          title: "Hollywood Legend's Personal Collection",
-          mysteryLevel: 'high',
-          hint: "Academy Award winner from the Golden Age of Hollywood",
-          clues: [
-            "Active from 1940s-1980s",
-            "Known for romantic roles",
-            "Owned iconic jewelry collection",
-            "Lived in Beverly Hills mansion"
-          ],
-          revealProgress: 15, // 15% of bids needed for reveal
-          currentBids: 47,
-          bidsNeeded: 100,
-          minimumBid: 5000,
-          totalValue: "250K-500K",
-          endTime: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
-          image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400",
-          potentialItems: [
-            "Vintage haute couture gowns",
-            "Diamond jewelry collection",
-            "Personal letters and photographs",
-            "Film memorabilia"
-          ],
-          expertVerification: true,
-          suspenseRating: 9.2,
-          participantCount: 47,
-          averageBid: 12500,
-          topBidders: 5,
-          reputationRequired: 'gold',
-          mysteryPoints: 2500
-        },
-        {
-          id: 2,
-          category: 'historical',
-          title: "World War II Officer's Estate",
-          mysteryLevel: 'extreme',
-          hint: "High-ranking Allied officer with classified materials",
-          clues: [
-            "European theater operations",
-            "Intelligence background",
-            "Decorated for valor",
-            "Post-war diplomatic role"
-          ],
-          revealProgress: 8,
-          currentBids: 23,
-          bidsNeeded: 150,
-          minimumBid: 10000,
-          totalValue: "500K-1M",
-          endTime: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
-          image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400",
-          potentialItems: [
-            "Military decorations and medals",
-            "Classified documents (declassified)",
-            "Personal war diary",
-            "Strategic maps and plans"
-          ],
-          expertVerification: true,
-          suspenseRating: 9.8,
-          participantCount: 23,
-          averageBid: 18000,
-          topBidders: 3,
-          reputationRequired: 'platinum',
-          mysteryPoints: 5000
-        },
-        {
-          id: 3,
-          category: 'royalty',
-          title: "European Noble Family Treasures",
-          mysteryLevel: 'medium',
-          hint: "Minor European royalty, 18th-19th century",
-          clues: [
-            "Central European kingdom",
-            "Connected to major royal houses",
-            "Art patron and collector",
-            "Castle included rare library"
-          ],
-          revealProgress: 32,
-          currentBids: 64,
-          bidsNeeded: 80,
-          minimumBid: 3000,
-          totalValue: "100K-300K",
-          endTime: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
-          image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400",
-          potentialItems: [
-            "Royal jewelry and regalia",
-            "Illuminated manuscripts",
-            "Fine art and sculptures",
-            "Antique furniture"
-          ],
-          expertVerification: true,
-          suspenseRating: 8.5,
-          participantCount: 64,
-          averageBid: 7500,
-          topBidders: 8,
-          reputationRequired: 'silver',
-          mysteryPoints: 1500
-        },
-        {
-          id: 4,
-          category: 'artist',
-          title: "Mysterious Modern Master's Studio",
-          mysteryLevel: 'high',
-          hint: "20th century artist, abstract expressionist movement",
-          clues: [
-            "Exhibited in major galleries",
-            "Part of influential art movement",
-            "Works in private collections",
-            "Taught at prestigious art school"
-          ],
-          revealProgress: 22,
-          currentBids: 35,
-          bidsNeeded: 120,
-          minimumBid: 8000,
-          totalValue: "300K-600K",
-          endTime: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
-          image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400",
-          potentialItems: [
-            "Original paintings and sketches",
-            "Artist's tools and materials",
-            "Personal photographs",
-            "Correspondence with galleries"
-          ],
-          expertVerification: true,
-          suspenseRating: 8.9,
-          participantCount: 35,
-          averageBid: 15000,
-          topBidders: 4,
-          reputationRequired: 'gold',
-          mysteryPoints: 3000
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        const response = await mysteryBidsAPI.getAll({ 
+          category: selectedCategory, 
+          status: 'active' 
+        });
+
+        if (response.data.success) {
+          setMysteryAuctions(response.data.data || []);
         }
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, []);
+      } catch (error) {
+        console.error('Error fetching mystery bids:', error);
+        toast.error('Failed to load mystery bid auctions');
+        setMysteryAuctions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedCategory]);
 
   const categories = [
     { id: 'all', name: 'All Categories', icon: QuestionMarkCircleIcon },

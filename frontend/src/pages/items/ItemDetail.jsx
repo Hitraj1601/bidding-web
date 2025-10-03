@@ -426,11 +426,11 @@ const ItemDetail = () => {
                   </div>
 
                   <Link
-                    to={`/ar-preview/${item.id}`}
+                    to={`/provenance/${item.id}`}
                     className="w-full bg-gray-900 hover:bg-gray-800 text-white py-2 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
                   >
-                    <EyeIcon className="w-4 h-4" />
-                    <span>AR Preview</span>
+                    <DocumentTextIcon className="w-4 h-4" />
+                    <span>View Provenance</span>
                   </Link>
                 </div>
               </div>

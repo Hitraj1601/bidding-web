@@ -624,11 +624,11 @@ const ProvenanceTracker = () => {
                       <span>View Auction</span>
                     </Link>
                     <Link
-                      to={`/ar-preview/${itemId}`}
+                      to={`/items/${itemId}`}
                       className="w-full bg-gray-900 hover:bg-gray-800 text-white py-2 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
                     >
                       <EyeIcon className="w-4 h-4" />
-                      <span>AR Preview</span>
+                      <span>View Details</span>
                     </Link>
                     <button className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2">
                       <DocumentDuplicateIcon className="w-4 h-4" />

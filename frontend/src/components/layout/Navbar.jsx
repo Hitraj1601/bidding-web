@@ -151,9 +151,9 @@ const Navbar = () => {
                       className="w-8 h-8 rounded-full"
                     />
                     <div className="text-sm">
-                      <p className="text-gray-900 font-medium">{user.username}</p>
+                      <p className="text-gray-900 font-medium">{user.username || user.firstName || 'User'}</p>
                       <p className="text-gray-500 text-xs">
-                        Level {user.level} • {user.prestige} pts
+                        Level {user.level || 1} • {user.points || user.prestige || 0} pts
                       </p>
                     </div>
                   </div>

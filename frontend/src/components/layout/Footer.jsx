@@ -18,7 +18,7 @@ const Footer = () => {
       { name: 'Fees & Pricing', href: '/pricing' },
     ],
     features: [
-      { name: 'AR Preview', href: '/ar-preview' },
+
       { name: 'Provenance Tracking', href: '/provenance' },
       { name: 'Time Capsule Auctions', href: '/time-capsule' },
       { name: 'Mystery Bids', href: '/mystery-bids' },
@@ -85,7 +85,7 @@ const Footer = () => {
             <p className="text-gray-300 mb-6 leading-relaxed">
               The world's most trusted marketplace for authentic antiques and collectibles. 
               Discover rare treasures, connect with collectors, and experience the future 
-              of antique trading with AR previews and provenance tracking.
+              of antique trading with provenance tracking and expert verification.
             </p>
             
             {/* Contact Info */}

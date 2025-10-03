@@ -141,6 +141,18 @@ const Profile = () => {
     { id: 'settings', label: 'Settings', icon: CogIcon }
   ];
 
+  // Show loading spinner if user data is not available
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+          <p className="mt-2 text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -158,8 +170,8 @@ const Profile = () => {
               <div className="flex items-start space-x-4">
                 <div className="relative -mt-16">
                   <img
-                    src={user?.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150"}
-                    alt={user?.name}
+                    src={user?.avatar || user?.profilePicture || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150"}
+                    alt={user?.fullName || user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User'}
                     className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
                   />
                   <button className="absolute bottom-0 right-0 bg-purple-600 text-white rounded-full p-2 shadow-lg hover:bg-purple-700 transition-colors duration-200">
@@ -168,7 +180,9 @@ const Profile = () => {
                 </div>
                 <div className="pt-4">
                   <div className="flex items-center space-x-2">
-                    <h1 className="text-2xl font-bold text-gray-900">{user?.name}</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">
+                      {user?.fullName || user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User'}
+                    </h1>
                     {profileData.verified && (
                       <CheckBadgeSolid className="w-6 h-6 text-blue-500" />
                     )}
@@ -184,7 +198,7 @@ const Profile = () => {
                     </span>
                     <span className="flex items-center space-x-1">
                       <StarSolid className="w-4 h-4 text-yellow-400" />
-                      <span>{stats.avgRating}</span>
+                      <span>{stats.avgRating || 0}</span>
                     </span>
                   </div>
                   {!isEditing ? (
@@ -230,19 +244,19 @@ const Profile = () => {
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-gray-200">
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">{stats.totalSales}</div>
+                <div className="text-2xl font-bold text-purple-600">{stats.totalSales || 0}</div>
                 <div className="text-sm text-gray-600">Total Sales</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">${stats.totalEarnings.toLocaleString()}</div>
+                <div className="text-2xl font-bold text-green-600">${(stats.totalEarnings || 0).toLocaleString()}</div>
                 <div className="text-sm text-gray-600">Earnings</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{stats.successRate}%</div>
+                <div className="text-2xl font-bold text-blue-600">{stats.successRate || 0}%</div>
                 <div className="text-sm text-gray-600">Success Rate</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">{stats.currentListings}</div>
+                <div className="text-2xl font-bold text-orange-600">{stats.currentListings || 0}</div>
                 <div className="text-sm text-gray-600">Active Listings</div>
               </div>
             </div>
@@ -287,7 +301,7 @@ const Profile = () => {
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h3 className="font-semibold text-gray-900 mb-3">Specialties</h3>
                     <div className="flex flex-wrap gap-2">
-                      {profileData.specialties.map((specialty, index) => (
+                      {(profileData.specialties || []).map((specialty, index) => (
                         <span
                           key={index}
                           className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm"
@@ -302,7 +316,7 @@ const Profile = () => {
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h3 className="font-semibold text-gray-900 mb-3">Languages</h3>
                     <div className="flex flex-wrap gap-2">
-                      {profileData.languages.map((language, index) => (
+                      {(profileData.languages || []).map((language, index) => (
                         <span
                           key={index}
                           className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
@@ -442,7 +456,7 @@ const Profile = () => {
                 <div className="bg-gray-50 rounded-lg p-4 mb-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-2xl font-bold text-gray-900">{stats.avgRating}</div>
+                      <div className="text-2xl font-bold text-gray-900">{stats.avgRating || 0}</div>
                       <div className="text-sm text-gray-600">Average Rating</div>
                     </div>
                     <div className="flex items-center space-x-1">

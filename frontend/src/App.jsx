@@ -12,6 +12,9 @@ import Home from './pages/Home';
 import ItemsListing from './pages/ItemsListing';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
+import OAuthCallback from './pages/auth/OAuthCallback';
 import Dashboard from './pages/Dashboard';
 import AuctionDetail from './pages/auctions/AuctionDetail';
 import ItemDetail from './pages/items/ItemDetail';
@@ -20,10 +23,10 @@ import Profile from './pages/Profile';
 import Leaderboard from './pages/Leaderboard';
 import CollectorNetwork from './pages/CollectorNetwork';
 import ProvenanceTracker from './pages/ProvenanceTracker';
-import ARPreview from './pages/ARPreview';
 import TimeCapsuleAuctions from './pages/TimeCapsuleAuctions';
 import MysteryBids from './pages/MysteryBids';
 import RestorationMarketplace from './pages/RestorationMarketplace';
+import AdminPanel from './pages/admin/AdminPanel';
 
 // Protected Route Component
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -60,6 +63,9 @@ function App() {
             <Route path="/items" element={<ItemsListing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/oauth-callback" element={<OAuthCallback />} />
             <Route path="/auctions/:id" element={<AuctionDetail />} />
             <Route path="/items/:id" element={<ItemDetail />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
@@ -67,7 +73,6 @@ function App() {
             <Route path="/mystery-bids" element={<MysteryBids />} />
             <Route path="/restoration" element={<RestorationMarketplace />} />
             <Route path="/provenance/:itemId" element={<ProvenanceTracker />} />
-            <Route path="/ar-preview/:itemId" element={<ARPreview />} />
 
             {/* Protected Routes */}
             <Route path="/dashboard" element={
@@ -88,6 +93,11 @@ function App() {
             <Route path="/collectors" element={
               <ProtectedRoute>
                 <CollectorNetwork />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <AdminPanel />
               </ProtectedRoute>
             } />
           </Routes>

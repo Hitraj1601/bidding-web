@@ -13,15 +13,22 @@ router.get('/global', async (req, res) => {
   try {
     const [
       totalItems,
-      activeAuctions,
+      activeAuctionsCount,
+      activeItemsCount,
       totalUsers,
-      successfulSales
+      soldItemsCount,
+      wonBidsCount
     ] = await Promise.all([
       Item.countDocuments(),
-      Auction.countDocuments({ status: 'active' }) + Item.countDocuments({ status: 'active' }),
+      Auction.countDocuments({ status: 'active' }),
+      Item.countDocuments({ status: 'active' }),
       User.countDocuments(),
-      Item.countDocuments({ status: 'sold' }) + Bid.countDocuments({ status: 'won' })
+      Item.countDocuments({ status: 'sold' }),
+      Bid.countDocuments({ status: 'won' })
     ]);
+
+    const activeAuctions = activeAuctionsCount + activeItemsCount;
+    const successfulSales = soldItemsCount + wonBidsCount;
 
     res.json({
       success: true,

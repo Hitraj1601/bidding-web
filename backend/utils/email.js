@@ -8,29 +8,22 @@ const __dirname = path.dirname(__filename);
 
 // Create transporter
 const createTransporter = () => {
-  // For development, you can use Gmail with app password
-  // For production, use a proper email service like SendGrid, Mailgun, etc.
-  
-  if (process.env.NODE_ENV === 'production') {
-    // Production email service configuration
-    return nodemailer.createTransporter({
-      service: 'gmail', // or your preferred service
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-  } else {
-    // Development - use Ethereal for testing
-    return nodemailer.createTransporter({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      auth: {
-        user: 'ethereal.user@ethereal.email',
-        pass: 'ethereal.pass'
-      }
-    });
+  // Use Gmail for both development and production
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.error('❌ Email credentials not found in environment variables');
+    throw new Error('Email credentials not configured');
   }
+  
+  return nodemailer.createTransporter({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    },
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
 };
 
 // Email templates - using string concatenation approach

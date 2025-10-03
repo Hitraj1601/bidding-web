@@ -13,48 +13,51 @@ import {
 const router = express.Router();
 
 // Google OAuth Routes
-router.get('/google',
+router.get('/google', (req, res, next) => {
+  console.log('🔵 Starting Google OAuth flow...');
   passport.authenticate('google', { 
     scope: ['profile', 'email'] 
-  })
-);
+  })(req, res, next);
+});
 
-router.get('/google/callback', 
-  passport.authenticate('google', { failureRedirect: `${process.env.CLIENT_URL}/login?error=oauth_failed` }),
-  async (req, res) => {
+router.get('/google/callback', (req, res, next) => {
+  console.log('🔵 Google OAuth callback received');
+  passport.authenticate('google', { 
+    failureRedirect: `${process.env.CLIENT_URL}/login?error=oauth_failed`,
+    failureMessage: true
+  })(req, res, next);
+}, async (req, res) => {
     try {
+      console.log('🔵 Processing OAuth callback for user:', req.user.email);
+      
       // Generate JWT tokens
       const accessToken = jwt.sign(
-        { id: req.user._id, email: req.user.email },
+        { userId: req.user._id, email: req.user.email },
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRES_IN }
       );
 
       const refreshToken = jwt.sign(
-        { id: req.user._id },
+        { userId: req.user._id },
         process.env.JWT_REFRESH_SECRET,
         { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN }
       );
 
-      // Set secure cookies
-      const isProduction = process.env.NODE_ENV === 'production';
-      
-      res.cookie('accessToken', accessToken, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? 'none' : 'lax',
-        maxAge: 15 * 60 * 1000 // 15 minutes
+      // Store refresh token in user document
+      req.user.refreshTokens = req.user.refreshTokens || [];
+      req.user.refreshTokens.push({
+        token: refreshToken,
+        createdAt: new Date()
       });
+      req.user.lastLogin = new Date();
+      await req.user.save();
 
-      res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? 'none' : 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-      });
+      // Encode tokens for URL safety
+      const encodedAccessToken = encodeURIComponent(accessToken);
+      const encodedRefreshToken = encodeURIComponent(refreshToken);
 
-      // Redirect to frontend with success
-      res.redirect(`${process.env.CLIENT_URL}/dashboard?login=success`);
+      // Redirect to frontend with tokens in URL params
+      res.redirect(`${process.env.CLIENT_URL}/oauth-callback?accessToken=${encodedAccessToken}&refreshToken=${encodedRefreshToken}`);
     } catch (error) {
       console.error('OAuth callback error:', error);
       res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_error`);

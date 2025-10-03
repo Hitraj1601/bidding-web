@@ -161,7 +161,7 @@ const Dashboard = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Active Auctions</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {dashboardData.stats.activeAuctions}
+                  {dashboardData.stats.activeAuctions || 0}
                 </p>
               </div>
             </div>
@@ -175,7 +175,7 @@ const Dashboard = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Watching</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {dashboardData.stats.watchingItems}
+                  {dashboardData.stats.watchingItems || 0}
                 </p>
               </div>
             </div>
@@ -189,7 +189,7 @@ const Dashboard = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Won Auctions</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {dashboardData.stats.wonAuctions}
+                  {dashboardData.stats.wonAuctions || 0}
                 </p>
               </div>
             </div>
@@ -203,7 +203,7 @@ const Dashboard = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Bids</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {dashboardData.stats.totalBids}
+                  {dashboardData.stats.totalBids || 0}
                 </p>
               </div>
             </div>
